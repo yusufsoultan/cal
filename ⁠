@@ -1,0 +1,140 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const CalculatorApp());
+}
+
+class CalculatorApp extends StatelessWidget {
+  const CalculatorApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Burgundy Calc',
+      theme: ThemeData.dark().copyWith(
+        scaffoldBackgroundColor: const Color(0xFF121212),
+      ),
+      home: const CalculatorScreen(),
+    );
+  }
+}
+
+class CalculatorScreen extends StatefulWidget {
+  const CalculatorScreen({super.key});
+
+  @override
+  State<CalculatorScreen> createState() => _CalculatorScreenState();
+}
+
+class _CalculatorScreenState extends State<CalculatorScreen> {
+  String _output = "0";
+  String _expression = "";
+
+  void _numClick(String btnText) {
+    setState(() {
+      if (btnText == "C") {
+        _output = "0";
+        _expression = "";
+      } else if (btnText == "=") {
+        try {
+          _output = _calculateResult(_expression);
+        } catch (e) {
+          _output = "Error";
+        }
+      } else {
+        if (_output == "0") {
+          _expression = btnText;
+          _output = btnText;
+        } else {
+          _expression += btnText;
+          _output = _expression;
+        }
+      }
+    });
+  }
+
+  String _calculateResult(String exp) {
+    final RegExp regExp = RegExp(r'(\d+)([\+\-\x\/])(\d+)');
+    final match = regExp.firstMatch(exp);
+    if (match != null) {
+      double num1 = double.parse(match.group(1)!);
+      String op = match.group(2)!;
+      double num2 = double.parse(match.group(3)!);
+      
+      switch (op) {
+        case '+': return (num1 + num2).toStringAsFixed(0);
+        case '-': return (num1 - num2).toStringAsFixed(0);
+        case 'x': return (num1 * num2).toStringAsFixed(0);
+        case '/': return num2 != 0 ? (num1 / num2).toStringAsFixed(1) : "Error";
+      }
+    }
+    return exp;
+  }
+
+  Widget _buildButton(String text, Color bgColor, Color textColor) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.all(8),
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: bgColor,
+            foregroundColor: textColor,
+            padding: const EdgeInsets.all(22),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 0,
+          ),
+          onPressed: () => _numClick(text),
+          child: Text(text, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const Color burgundyColor = Color(0xFF6B1111); 
+    const Color darkGrey = Color(0xFF1E1E1E);
+    const Color lightGrey = Color(0xFF2D2D2D);
+
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                alignment: Alignment.bottomRight,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(_expression, style: const TextStyle(fontSize: 28, color: Colors.grey)),
+                    const SizedBox(height: 10),
+                    Text(_output, style: const TextStyle(fontSize: 64, fontWeight: FontWeight.w300, color: Colors.white)),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              decoration: const BoxDecoration(
+                color: darkGrey,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+              ),
+              child: Column(
+                children: [
+                  Row(children: [_buildButton("C", lightGrey, Colors.white), _buildButton("/", lightGrey, burgundyColor)]),
+                  Row(children: [_buildButton("7", lightGrey, Colors.white), _buildButton("8", lightGrey, Colors.white), _buildButton("9", lightGrey, Colors.white), _buildButton("x", lightGrey, burgundyColor)]),
+                  Row(children: [_buildButton("4", lightGrey, Colors.white), _buildButton("5", lightGrey, Colors.white), _buildButton("6", lightGrey, Colors.white), _buildButton("-", lightGrey, burgundyColor)]),
+                  Row(children: [_buildButton("1", lightGrey, Colors.white), _buildButton("2", lightGrey, Colors.white), _buildButton("3", lightGrey, Colors.white), _buildButton("+", lightGrey, burgundyColor)]),
+                  Row(children: [_buildButton("0", lightGrey, Colors.white), _buildButton("=", burgundyColor, Colors.white)]),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
